@@ -494,9 +494,9 @@ function write_blueprint_packages() {
             if [ "$EXTENSION" != "sh" ]; then
                 printf '\tsrcs: ["%s/%s"],\n' "$SRC" "$FILE"
                 printf '\tcheck_elf_files: false,\n'
-                printf '\tprefer: true,\n'
-            else
-                printf '\tsrc: "%s/%s",\n' "$SRC" "$FILE"
+                printf '\tstrip: {\n'
+                printf '\t\tnone: true,\n'
+                printf '\t},\n'
             fi
             unset EXTENSION
         else
