@@ -94,6 +94,18 @@ function setup_vendor() {
         VENDOR_RADIO_STATE=0
     fi
 
+    export BINARIES_LOCATION="$ANDROID_ROOT"/prebuilts/extract-tools/${HOST}-x86/bin
+
+    export SIMG2IMG="$BINARIES_LOCATION"/simg2img
+
+    for version in 0_8 0_9; do
+        export PATCHELF_${version}="$BINARIES_LOCATION"/patchelf-"${version}"
+    done
+
+    if [ -z "$PATCHELF_VERSION" ]; then
+        export PATCHELF_VERSION=0_9
+    fi
+
     if [ -z "$PATCHELF" ]; then
         export PATCHELF="$ANDROID_ROOT"/prebuilts/extract-tools/${HOST}-x86/bin/patchelf
     fi
@@ -1416,7 +1428,7 @@ function extract() {
                 if [[ $(file -b "$IMAGE") == Linux* ]]; then
                     extract_img_data "$IMAGE" "$DUMPDIR"/"$PARTITION"
                 elif [[ $(file -b "$IMAGE") == Android* ]]; then
-                    simg2img "$IMAGE" "$DUMPDIR"/"$PARTITION".raw
+                    "$SIMG2IMG" "$IMAGE" "$DUMPDIR"/"$PARTITION".raw
                     extract_img_data "$DUMPDIR"/"$PARTITION".raw "$DUMPDIR"/"$PARTITION"/
                 else
                     echo "Unsupported "$IMAGE""
@@ -1660,7 +1672,7 @@ function generate_prop_list_from_image() {
     if [[ $(file -b "$image_file") == Linux* ]]; then
         extract_img_data "$image_file" "$image_dir"
     elif [[ $(file -b "$image_file") == Android* ]]; then
-        simg2img "$image_file" "$image_dir"/"$(basename "$image_file").raw"
+        "$SIMG2IMG" "$image_file" "$image_dir"/"$(basename "$image_file").raw"
         extract_img_data "$image_dir"/"$(basename "$image_file").raw" "$image_dir"
         rm "$image_dir"/"$(basename "$image_file").raw"
     else
