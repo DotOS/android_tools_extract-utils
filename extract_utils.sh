@@ -462,6 +462,7 @@ function write_blueprint_packages() {
                 printf '\tcompile_multilib: "%s",\n' "$EXTRA"
             fi
             printf '\tcheck_elf_files: false,\n'
+            printf '\tprefer: true,\n'
         elif [ "$CLASS" = "APEX" ]; then
             printf 'prebuilt_apex {\n'
             printf '\tname: "%s",\n' "$PKGNAME"
@@ -479,6 +480,7 @@ function write_blueprint_packages() {
                 SRC="$SRC/app"
             fi
             printf '\tapk: "%s/%s",\n' "$SRC" "$FILE"
+            ARGS=(${ARGS//;/ })
             USE_PLATFORM_CERTIFICATE="true"
             for ARG in "${ARGS[@]}"; do
                 if [ "$ARG" = "PRESIGNED" ]; then
@@ -514,8 +516,11 @@ function write_blueprint_packages() {
         elif [ "$CLASS" = "EXECUTABLES" ]; then
             if [ "$EXTENSION" = "sh" ]; then
                 printf 'sh_binary {\n'
+                printf '\tname: "%s",\n' "$PKGNAME"
             else
                 printf 'cc_prebuilt_binary {\n'
+                printf '\tname: "%s",\n' "$BASENAME"
+                printf '\towner: "%s",\n' "$VENDOR"
             fi
             printf '\tname: "%s",\n' "$PKGNAME"
             printf '\towner: "%s",\n' "$VENDOR"
@@ -544,9 +549,6 @@ function write_blueprint_packages() {
             if [ "$DIRNAME" != "." ]; then
                 printf '\tsub_dir: "%s",\n' "$DIRNAME"
             fi
-        fi
-        if [ "$CLASS" = "SHARED_LIBRARIES" ] || [ "$CLASS" = "EXECUTABLES" ] ; then
-            printf '\tprefer: true,\n'
         fi
         if [ "$EXTRA" = "priv-app" ]; then
             printf '\tprivileged: true,\n'
@@ -1437,7 +1439,7 @@ function extract() {
 
         SRC="$DUMPDIR"
     fi
-
+    
     if [ -d "$SRC" ] && [ -f "$SRC"/super.img ]; then
         DUMPDIR="$TMPDIR"/super_dump
         mkdir -p "$DUMPDIR"
@@ -1457,7 +1459,7 @@ function extract() {
 
         SRC="$DUMPDIR"
     fi
-
+    
     if [ -d "$SRC" ] && [ -f "$SRC"/system.img ]; then
         DUMPDIR="$TMPDIR"/system_dump
         mkdir -p "$DUMPDIR"
